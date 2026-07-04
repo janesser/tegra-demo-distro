@@ -108,3 +108,37 @@ demo applications.
 Please see the contributor wiki page at [this link](https://github.com/OE4T/meta-tegra/wiki/OE4T-Contributor-Guide).
 Contributions are welcome!
 
+# Troubleshooting
+
+Actually `bitbake demo-sato-image` will not generate output to `deploy`.
+You can find the resulting files anyways under e.g. `./build/tmp/deploy/images/jetson-nano-devkit-emmc/demo-image-sato-jetson-nano-devkit-emmc-20260703230205.tegraflash.tar.gz`.
+
+The tgz can be unpacked, but won't work out of the box.
+
+	./doflash.sh --sdcard /dev/mmcblk0
+
+In my case i had to extend `flashvars` with below content
+
+	BOARDID=3448
+	BOARDSKU=0002
+
+Additionally (not sure if this is mandatory) i was installing
+
+	sudo apt install -y gdisk device-tree-compiler
+
+
+Override most situations on the sdcard
+
+	sudo sgdisk /dev/mmcblk0 --clear --mbrtogpt
+
+Writing to sdcard might take ages, if you're getting nervous (as me)
+
+	sudo apt install iotop
+	sudo iotop
+	# you should occassionally see a dd invokation writing to destined sdcard
+
+Booting up first time, surprisingly mounting root failed
+
+	mount /dev/mmcblk0p1 /mnt
+	vi /mnt/boot/extlinux/extlinux.conf
+	# replace placeholders in root kernel parameter, and reboot...
